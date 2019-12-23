@@ -11,5 +11,5 @@ trap cnorm EXIT INT
 # - test
 stack exec ghcid -- \
   --warnings \
-  --command "stack ghci Day3.hs" \
-  --test="selfTest" $@
+  --command "stack ghci $1" \
+  --test="selfTest"
