@@ -10,6 +10,5 @@ trap cnorm EXIT INT
 # - build
 # - test
 stack exec ghcid -- \
-  --warnings \
-  --command "stack ghci $1" \
+  --command "stack ghci --ghci-options -Wall $1" \
   --test="selfTest"
