@@ -8,12 +8,7 @@ import Control.Monad.ST
 import Data.Vector.Unboxed (Vector, fromList, freeze, thaw)
 import Data.Vector.Unboxed.Mutable (STVector, read, write)
 
-csv :: String -> [String]
-csv [] = []
-csv input =
-  case break (== ',') input of
-    ([], remain) ->     csv (drop 1 remain)
-    (a,  remain) -> a : csv (drop 1 remain)
+import Csv
 
 parse :: String -> Vector Int
 parse = fromList . map Prelude.read . csv
