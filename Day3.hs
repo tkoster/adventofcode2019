@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, ViewPatterns #-}
+{-# LANGUAGE BangPatterns, RecordWildCards, ViewPatterns #-}
 
 module Day3 where
 
@@ -8,6 +8,7 @@ import Data.Bits
 import Data.HashSet (HashSet)
 import qualified Data.HashSet as HashSet
 import Data.List (foldl', sort, sortOn)
+import Data.Maybe
 import Data.Vector.Unboxed (Vector, (!))
 import qualified Data.Vector.Unboxed as Vector
 import qualified Data.Vector.Unboxed.Mutable as MVector
@@ -88,13 +89,34 @@ closestTo target points
 
 part1 :: Path -> Path -> Maybe Int
 part1 path1 path2 =
-  (distance origin <$>) . closestTo origin . filter (/= origin) $ (intersection path1 path2)
+  (distance origin <$>) . closestTo origin . filter (/= origin) $ intersection path1 path2
+
+pathLengthToTarget :: Path -> Point -> Maybe Int
+pathLengthToTarget path target = go 0 (edges path)
+  where
+    go _ [] = Nothing -- target was not on path
+    go !l (edge@(Edge pos _ dist) : remain)
+      | target `elem` edgePoints edge = -- target on path: stop at target
+          Just $ l + distance pos target
+      | otherwise = -- target not on edge
+          go (l + dist) remain
+
+part2 :: Path -> Path -> Int
+part2 path1 path2 =
+  let targets = filter (/= origin) (intersection path1 path2)
+      scores = map score targets
+  in  minimum (catMaybes scores)
+  where
+    score target = liftM2 (+) (pathLengthToTarget path1 target) (pathLengthToTarget path2 target)
 
 main :: IO ()
 main = do
   selfTest
   [path1, path2] <- readInputFile "day3input.txt"
+  -- Part 1
   print $ part1 path1 path2
+  -- Part 2
+  print $ part2 path1 path2
 
 --------
 
@@ -139,6 +161,12 @@ selfTest = hspec $ do
     it "works" $
       closestTo (0, 0) [(4, 3), (2, 1), (1, 1)] `shouldBe` Just (1, 1)
 
+  describe "pathLengthToTarget" $ do
+    it "is Nothing when target not on path" $
+      pathLengthToTarget (parsePath "R4") (1, 1) `shouldBe` Nothing
+    it "works" $
+      pathLengthToTarget (parsePath "R4,U4") (4, 2) `shouldBe` Just 6
+
   describe "part1" $ do
     it "works for example 1" $ do
       let path1 = parsePath "R75,D30,R83,U83,L12,D49,R71,U7,L72"
@@ -148,3 +176,13 @@ selfTest = hspec $ do
       let path1 = parsePath "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51"
           path2 = parsePath "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
       part1 path1 path2 `shouldBe` Just 135
+
+  describe "part2" $ do
+    it "works for example 1" $ do
+      let path1 = parsePath "R75,D30,R83,U83,L12,D49,R71,U7,L72"
+          path2 = parsePath "U62,R66,U55,R34,D71,R55,D58,R83"
+      part2 path1 path2 `shouldBe` 610
+    it "works for example 2" $ do
+      let path1 = parsePath "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51"
+          path2 = parsePath "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
+      part2 path1 path2 `shouldBe` 410
