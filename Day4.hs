@@ -1,5 +1,6 @@
 module Day4 where
 
+import Data.List
 import Test.Hspec
 
 numbers :: [Int]
@@ -29,10 +30,19 @@ isCandidate value = hasConsecutiveDigits value && hasAscendingDigits value
 part1 :: Int
 part1 = (length . filter isCandidate) numbers
 
+hasPair :: Int -> Bool
+hasPair = any (== 2) . map length . group . digits
+
+isCandidate2 :: Int -> Bool
+isCandidate2 value = hasPair value && hasAscendingDigits value
+
+part2 :: Int
+part2 = (length . filter isCandidate2) numbers
 
 main :: IO ()
 main = do
   print part1
+  print part2
 
 --------
 
@@ -96,3 +106,13 @@ selfTest = hspec $ do
       isCandidate 223450 `shouldBe` False
     it "is False for 123789" $
       isCandidate 123789 `shouldBe` False
+
+  describe "hasPair" $ do
+    it "is False for 111111" $
+      hasPair 111111 `shouldBe` False
+    it "is True for 112233" $
+      hasPair 112233 `shouldBe` True
+    it "is False for 123444" $
+      hasPair 123444 `shouldBe` False
+    it "is True for 111122" $
+      hasPair 111122 `shouldBe` True
