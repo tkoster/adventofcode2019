@@ -1,9 +1,11 @@
-{-# LANGUAGE BangPatterns, OverloadedStrings #-}
+{-# LANGUAGE BangPatterns, OverloadedStrings, ViewPatterns #-}
 
 module Day6 where
 
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as HashMap
+import Data.List (intersect)
+import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text
@@ -34,21 +36,45 @@ lookupParent = HashMap.lookup
 listStars :: Starmap -> [Text]
 listStars = HashMap.keys
 
-depth :: Starmap -> Text -> Int
-depth starmap star = go 0 star
+foldParents :: (Text -> a -> a) -> a -> Starmap -> Text -> a
+foldParents f z starmap star = go z star
   where
-    go !n child
-      | Just parent <- lookupParent child starmap = go (n + 1) parent
-      | otherwise = n
+    go !a child
+      | Just parent <- lookupParent child starmap = go (f parent a) parent
+      | otherwise = a
+
+depth :: Starmap -> Text -> Int
+depth = foldParents (const (+1)) 0
+
+ancestors :: Starmap -> Text -> [Text]
+ancestors = foldParents (:) []
 
 part1 :: Starmap -> Int
 part1 starmap = sum . map (depth starmap) $ listStars starmap
+
+mostRecentCommonAncestor :: Starmap -> Text -> Text -> Maybe Text
+mostRecentCommonAncestor starmap (ancestors starmap -> star1ancestors) (ancestors starmap -> star2ancestors) = do
+  listToMaybe . take 1 . reverse $ intersect star1ancestors star2ancestors
+
+minTransfers :: Starmap -> Text -> Text -> Int
+minTransfers starmap star1 star2 =
+  let Just mrca = mostRecentCommonAncestor starmap star1 star2
+      mrcaDepth = depth' mrca
+      star1Depth = depth' star1
+      star2Depth = depth' star2
+  in  star1Depth + star2Depth - 2 * mrcaDepth - 2
+  where
+    depth' = depth starmap
+
+part2 :: Starmap -> Int
+part2 starmap = minTransfers starmap "YOU" "SAN"
 
 main :: IO ()
 main = do
   orbits <- readInputFile "day6input.txt"
   let starmap = fromOrbits orbits
   print $ part1 starmap
+  print $ part2 starmap
 
 --------
 
@@ -72,8 +98,28 @@ selfTest = hspec $ do
       let starmap = fromOrbits [Orbit "COM" "Saturn", Orbit "Saturn" "Enceladus"]
       depth starmap "Enceladus" `shouldBe` 2
 
-  describe "part1" $ do
-    it "returns 3 for a satellits orbiting a star that orbits the COM" $ do
+  describe "ancestors" $ do
+    it "returns [] for nonexistent star" $
+      ancestors mempty "Saturn" `shouldBe` []
+    it "returns [\"COM\"] for a star orbiting the COM" $
+      ancestors (fromOrbits [Orbit "COM" "Saturn"]) "Saturn" `shouldBe` ["COM"]
+    it "returns [\"COM\", \"Saturn\"] for a satellite orbiting a star that orbits the COM" $ do
       let starmap = fromOrbits [Orbit "COM" "Saturn", Orbit "Saturn" "Enceladus"]
-      part1 starmap `shouldBe` 3
+      ancestors starmap "Enceladus" `shouldBe` ["COM", "Saturn"]
 
+  describe "mostRecentCommonAncestor" $ do
+    it "returns Nothing for nonexistent star" $
+      mostRecentCommonAncestor mempty "ABC" "DEF" `shouldBe` Nothing
+    it "returns Just \"COM\" for two stars orbiting the COM" $ do
+      let starmap = fromOrbits [Orbit "COM" "Saturn", Orbit "COM" "Neptune"]
+      mostRecentCommonAncestor starmap "Saturn" "Neptune" `shouldBe` Just "COM"
+    it "returns Just \"D\" for the example starmap" $ do
+      mostRecentCommonAncestor exampleStarmap "YOU" "SAN" `shouldBe` Just "D"
+      mostRecentCommonAncestor exampleStarmap "SAN" "YOU" `shouldBe` Just "D"
+
+  describe "minTransfers" $
+    it "returns 4 for the example starmap" $
+      minTransfers exampleStarmap "YOU" "SAN" `shouldBe` 4
+
+exampleStarmap :: Starmap
+exampleStarmap = fromOrbits (parseInput "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L\nK)YOU\nI)SAN")
