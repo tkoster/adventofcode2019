@@ -1,5 +1,6 @@
 module Intcode3
-  ( parse
+  ( Memory
+  , parse
   , run
   , exec
   , eval
@@ -15,6 +16,8 @@ import qualified Data.Vector.Unboxed as Vector
 import Test.Hspec
 
 import Csv
+
+type Memory = Vector Int
 
 -- Source code parsing
 
