@@ -7,7 +7,7 @@ main = do
   print $ sum . map (fixfuel . read) . lines $ input
 
 fuel :: Int -> Int
-fuel mass = truncate ((fromIntegral mass) / 3.0) - 2
+fuel mass = mass `div` 3 - 2
 
 fixfuel :: Int -> Int
 fixfuel mass
