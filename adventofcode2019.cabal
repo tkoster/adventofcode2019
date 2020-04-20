@@ -1,0 +1,57 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: e19db4c0e8da0647cb998a819baf95864419cf2e23e90beb629d4a6460726ecf
+
+name:           adventofcode2019
+version:        0.1.0.0
+description:    Advent of Code 2019
+author:         Thomas M. Koster
+maintainer:     tkoster@gmail.com
+copyright:      2019 Thomas M. Koster
+build-type:     Simple
+
+library
+  exposed-modules:
+      Csv
+      Day1
+      Day10
+      Day11
+      Day12
+      Day2
+      Day3
+      Day4
+      Day5
+      Day6
+      Day7
+      Day8
+      Day9
+      Intcode
+      Intcode.Assembler
+      Intcode.Evaluator
+      Intcode.Loader
+      Intcode.Spec
+      Intcode.Types
+      Intcode2
+      Intcode3
+      Intcode4
+      IntcodeList
+  other-modules:
+      Paths_adventofcode2019
+  hs-source-dirs:
+      ./.
+  default-extensions: DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
+  ghc-options: -Wall
+  build-depends:
+      attoparsec
+    , base >=4.7 && <5
+    , hashable
+    , hspec
+    , megaparsec
+    , text
+    , unordered-containers
+    , vector
+  default-language: Haskell2010

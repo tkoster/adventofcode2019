@@ -1,0 +1,41 @@
+name: adventofcode2019
+version: 0.1.0.0
+author: Thomas Koster
+maintainer: tkoster@gmail.com
+copyright: 2019 Thomas M. Koster
+
+description: Advent of Code 2019
+
+dependencies:
+- base >= 4.7 && < 5
+- attoparsec
+- hashable
+- hspec
+- megaparsec
+- text
+- unordered-containers
+- vector
+
+default-extensions:
+- DefaultSignatures
+- DeriveGeneric
+- DerivingStrategies
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- LambdaCase
+- MultiParamTypeClasses
+- OverloadedStrings
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TupleSections
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+
+ghc-options:
+- -Wall
+
+library:
+  source-dirs: .
