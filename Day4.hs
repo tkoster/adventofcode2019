@@ -14,9 +14,7 @@ digits value = reverse (digits' value)
       | otherwise = n `mod` 10 : digits' (n `div` 10)
 
 pairs :: [a] -> [(a, a)]
-pairs [] = []
-pairs [_] = []
-pairs (x : y : ys) = (x, y) : pairs (y : ys)
+pairs l = zip l (drop 1 l)
 
 hasConsecutiveDigits :: Int -> Bool
 hasConsecutiveDigits = any (uncurry (==)) . pairs . digits
