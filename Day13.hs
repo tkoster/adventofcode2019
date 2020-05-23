@@ -37,11 +37,12 @@ render (display, score) = do
     for_ [0..w] $ \x -> do
       case HashMap.lookupDefault Empty (x, y) display of
         Empty  -> putChar ' '
-        Wall   -> putChar '#'
-        Block  -> putChar '*'
-        Paddle -> putChar '_'
-        Ball   -> putChar 'o'
+        Wall   -> putChar '█'
+        Block  -> putChar '◻'
+        Paddle -> putChar '⎺'
+        Ball   -> putChar '●'
     putChar '\n'
+  putStr "Score: "
   print score
 
 play :: (Display -> IO Int) -> IO Display
