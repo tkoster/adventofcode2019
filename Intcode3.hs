@@ -6,6 +6,7 @@ module Intcode3
   , eval
   , Result (..)
   , runIncremental
+  , step
   , spec
   )
 where
@@ -85,6 +86,8 @@ exec = (fst .) . run
 
 eval :: Vector Int -> [Int] -> [Int]
 eval = (snd .) . run
+
+-- Incremental evaluation
 
 data Result
   = Done (Vector Int)
