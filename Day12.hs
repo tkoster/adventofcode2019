@@ -1,19 +1,21 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -fno-warn-name-shadowing #-} -- fight me
+{-# LANGUAGE BangPatterns, OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 
-module Day12 where
+module Day12 (part1, part2, selfTest) where
 
 import           Control.Applicative (optional)
 import           Control.Monad (void)
 import           Data.Attoparsec.Text
-                  ( Parser, parseOnly, skipWhile, isHorizontalSpace, many1, sepBy, string, decimal, signed, endOfLine)
+                  ( Parser, parseOnly, skipWhile, isHorizontalSpace, many1
+                  , sepBy, string, decimal, signed, endOfLine )
 import           Data.Foldable (foldl', for_)
 import           Data.Monoid (Sum (..), getSum)
 import           Data.Text (Text)
 import qualified Data.Text.IO as Text
+import           System.IO.Unsafe (unsafePerformIO)
 import           Test.Hspec
 
-data V3 = V3 Int Int Int
+data V3 = V3 { x :: Int, y :: Int, z :: Int }
   deriving (Eq, Show)
 
 zero :: V3
@@ -25,6 +27,9 @@ add (V3 x1 y1 z1) (V3 x2 y2 z2) = V3 x3 y3 z3
     x3 = x1 + x2
     y3 = y1 + y2
     z3 = z1 + z2
+
+data Moon = Moon { pos :: V3, vel :: V3 }
+  deriving (Eq, Show)
 
 data Step = Step { index :: Int, moons :: [Moon] }
   deriving (Eq, Show)
@@ -114,9 +119,6 @@ totalVelocity :: V3 -> [V3] -> V3
 totalVelocity a =
   foldl' add zero . map (velocity a)
 
-data Moon = Moon { pos :: V3, vel :: V3 }
-  deriving (Eq, Show)
-
 fromInitialPosition :: V3 -> Moon
 fromInitialPosition = flip Moon zero
 
@@ -127,8 +129,30 @@ move vel (Moon pos vel') = Moon (add pos vel'') vel''
 step :: [Moon] -> [Moon]
 step moons = [move vel moon | moon <- moons, let vel = totalVelocity (pos moon) (map pos moons)]
 
+steps :: [Moon] -> [[Moon]]
+steps = iterate step
+
 eval :: Int -> [Moon] -> [Moon]
-eval n moons = iterate step moons !! n
+eval n moons = steps moons !! n
+
+-- slow version
+evalLoop :: [Moon] -> [[Moon]]
+evalLoop initial = initial : takeWhile (/= initial) (drop 1 $ steps initial)
+
+period :: [Moon] -> (Int, Int, Int, Int)
+period initial =
+  (px, py, pz, px `lcm` py `lcm` pz)
+  where
+    initialx = map (x . pos) initial
+    initialy = map (y . pos) initial
+    initialz = map (z . pos) initial
+    loop = evalLoop initial
+    loopx = initialx : takeWhile (/= initialx) (drop 1 $ map (map (x . pos)) loop)
+    loopy = initialy : takeWhile (/= initialy) (drop 1 $ map (map (y . pos)) loop)
+    loopz = initialz : takeWhile (/= initialz) (drop 1 $ map (map (z . pos)) loop)
+    px = 1 + length loopx
+    py = 1 + length loopy
+    pz = 1 + length loopz
 
 potentialEnergy :: Moon -> Int
 potentialEnergy (Moon (V3 x y z) _) = abs x + abs y + abs z
@@ -146,10 +170,32 @@ totalEnergy = getSum . foldMap (Sum . energy)
 
 part1 :: IO ()
 part1 = do
-  day12input <- Text.readFile "day12input.txt"
-  let initialPositions = parse vectorList day12input
-      states = eval 1000 (map fromInitialPosition initialPositions)
+  let states = eval 1000 day12InitialState
   print $ totalEnergy states
+
+part2 :: IO ()
+part2 = do
+  print $ period day12InitialState
+
+-------- Inputs --------
+
+day12input :: Text
+day12input = unsafePerformIO $ Text.readFile "day12input.txt"
+
+day12InitialState :: [Moon]
+day12InitialState = map fromInitialPosition (parse vectorList day12input)
+
+example1input :: Text
+example1input = unsafePerformIO $ Text.readFile "day12example1input.txt"
+
+example1InitialState :: [Moon]
+example1InitialState = map fromInitialPosition (parse vectorList example1input)
+
+example1output :: Text
+example1output = unsafePerformIO $ Text.readFile "day12example1output.txt"
+
+example1Steps :: [Step]
+example1Steps = parse stepTraceList example1output
 
 -------- Tests --------
 
@@ -164,12 +210,10 @@ selfTest = hspec $ do
       it "accepts spaces after ," $
         parse vector "<x=1, y=2,       z=3>" `shouldBe` V3 1 2 3
     describe "parse vectorList" $ do
-      it "accepts day12input.txt" $ do
-        day12input <- Text.readFile "day12input.txt"
+      it "accepts day12input.txt" $
         parse vectorList day12input `shouldBe` [V3 5 4 4, V3 (-11) (-11) (-3), V3 0 7 0, V3 (-13) 2 10]
-      it "accepts day12example1input.txt" $ do
-        day12example1input <- Text.readFile "day12example1input.txt"
-        parse vectorList day12example1input `shouldSatisfy` (== 4) . length
+      it "accepts day12example1input.txt" $
+        length (parse vectorList example1input) `shouldBe` 4
     describe "parse moon" $
       it "accepts a moon" $ do
         let input = "pos=<x=1,y=2,z=3>,vel=<x=4,y=5,z=6>"
@@ -180,8 +224,7 @@ selfTest = hspec $ do
         parse stepTrace input `shouldBe` Step 2 [Moon (V3 1 2 3) (V3 4 5 6), Moon (V3 7 8 9) (V3 1 2 3)]
     describe "parse stepTraceList" $
       it "accepts day12example1output.txt" $ do
-        input <- Text.readFile "day12example1output.txt"
-        let output = parse stepTraceList input
+        let output = parse stepTraceList example1output
         length output `shouldBe` 11 -- After 0-10 steps
         output !! 0 `shouldBe` Step 0
                                 [ Moon (V3 (-1) 0 2) (V3 0 0 0)
@@ -197,24 +240,28 @@ selfTest = hspec $ do
                                 ]
 
   describe "simulation" $ do
-    example1input  <- runIO $ Text.readFile "day12example1input.txt"
-    example1output <- runIO $ Text.readFile "day12example1output.txt"
-
     describe "velocity" $ do
       it "ganymede-callisto example" $ do
         velocity (V3 3 0 0) (V3 5 0 0) `shouldBe` V3 1 0 0
         velocity (V3 5 0 0) (V3 3 0 0) `shouldBe` V3 (-1) 0 0
 
     describe "step" $ do
-      for_ (parse stepTraceList example1output) $ \ (Step n expectedStates) ->
+      for_ example1Steps $ \ (Step n expectedStates) ->
         it ("calculates the expected state after " <> show n <> " steps") $ do
-          let initialPositions = parse vectorList example1input
-              states = eval n (map fromInitialPosition initialPositions)
+          let states = eval n example1InitialState
           states `shouldBe` expectedStates
 
     describe "totalEnergy" $ do
       it "is 179 after 10 steps of example 1" $ do
-        let initialPositions = parse vectorList example1input
-            states = eval 10 (map fromInitialPosition initialPositions)
+        let states = eval 10 example1InitialState
         totalEnergy states `shouldBe` 179
 
+    describe "evalLoop" $ do
+      it "length is 2772 steps for example 1" $ do
+        let loop = evalLoop example1InitialState
+        length (take 2773 loop) `shouldBe` 2772
+
+    describe "period" $ do
+      it "equals 2772 for example 1" $ do
+        let (_, _, _, p) = period example1InitialState
+        p `shouldBe` 2772

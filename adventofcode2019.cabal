@@ -4,12 +4,12 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e19db4c0e8da0647cb998a819baf95864419cf2e23e90beb629d4a6460726ecf
+-- hash: 4fa2c74644d052ba9ad3ba593564134c2a7130b1e3c013cd5d7ed842cc110532
 
 name:           adventofcode2019
 version:        0.1.0.0
 description:    Advent of Code 2019
-author:         Thomas M. Koster
+author:         Thomas Koster
 maintainer:     tkoster@gmail.com
 copyright:      2019 Thomas M. Koster
 build-type:     Simple
