@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns, OverloadedStrings, ViewPatterns #-}
+{-# LANGUAGE BangPatterns, OverloadedStrings #-}
 
 module Day6 where
 
@@ -53,8 +53,11 @@ part1 :: Starmap -> Int
 part1 starmap = sum . map (depth starmap) $ listStars starmap
 
 mostRecentCommonAncestor :: Starmap -> Text -> Text -> Maybe Text
-mostRecentCommonAncestor starmap (ancestors starmap -> star1ancestors) (ancestors starmap -> star2ancestors) = do
+mostRecentCommonAncestor starmap star1 star2 = do
   listToMaybe . take 1 . reverse $ intersect star1ancestors star2ancestors
+  where
+    star1ancestors = ancestors starmap star1
+    star2ancestors = ancestors starmap star2
 
 minTransfers :: Starmap -> Text -> Text -> Int
 minTransfers starmap star1 star2 =
@@ -114,12 +117,19 @@ selfTest = hspec $ do
       let starmap = fromOrbits [Orbit "COM" "Saturn", Orbit "COM" "Neptune"]
       mostRecentCommonAncestor starmap "Saturn" "Neptune" `shouldBe` Just "COM"
     it "returns Just \"D\" for the example starmap" $ do
-      mostRecentCommonAncestor exampleStarmap "YOU" "SAN" `shouldBe` Just "D"
-      mostRecentCommonAncestor exampleStarmap "SAN" "YOU" `shouldBe` Just "D"
+      mostRecentCommonAncestor example2Starmap "YOU" "SAN" `shouldBe` Just "D"
+      mostRecentCommonAncestor example2Starmap "SAN" "YOU" `shouldBe` Just "D"
+
+  describe "part1" $
+    it "returns 42 for the example starmap" $
+      part1 example1Starmap `shouldBe` 42
 
   describe "minTransfers" $
     it "returns 4 for the example starmap" $
-      minTransfers exampleStarmap "YOU" "SAN" `shouldBe` 4
+      minTransfers example2Starmap "YOU" "SAN" `shouldBe` 4
 
-exampleStarmap :: Starmap
-exampleStarmap = fromOrbits (parseInput "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L\nK)YOU\nI)SAN")
+example1Starmap :: Starmap
+example1Starmap = fromOrbits (parseInput "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L")
+
+example2Starmap :: Starmap
+example2Starmap = fromOrbits (parseInput "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L\nK)YOU\nI)SAN")
