@@ -4,7 +4,8 @@ import Data.List
 import Data.Vector.Unboxed (Vector)
 import Test.Hspec
 
-import Intcode3 as Intcode
+import Intcode3 (Result(Done, Yield, Await), runIncremental)
+import qualified Intcode3 as Intcode
 
 runSample :: Vector Int -> (Int, Int, Int, Int, Int) -> Int
 runSample program (a, b, c, d, e) =
