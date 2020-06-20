@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 23a653d887dabd1cb119d28f22b5255a7f01753ce8c3c4de2f1b768bc348557e
+-- hash: ec91eb275e778ce93286b630cc4d8a5f8a0dad7ab37a3608089479484c7f613b
 
 name:           adventofcode2019
 version:        0.1.0.0
@@ -23,6 +23,7 @@ library
       Day12
       Day13
       Day14
+      Day15
       Day2
       Day3
       Day4
@@ -32,20 +33,14 @@ library
       Day8
       Day9
       Intcode
-      Intcode.Assembler
-      Intcode.Evaluator
-      Intcode.Loader
-      Intcode.Spec
-      Intcode.Types
       Intcode2
       Intcode3
-      Intcode4
       IntcodeList
   other-modules:
       Paths_adventofcode2019
   hs-source-dirs:
       ./.
-  default-extensions: DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
+  default-extensions: BangPatterns DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
   ghc-options: -Wall
   build-depends:
       attoparsec
@@ -53,7 +48,9 @@ library
     , hashable
     , hspec
     , megaparsec
+    , mtl
     , text
+    , transformers
     , unordered-containers
     , vector
   default-language: Haskell2010

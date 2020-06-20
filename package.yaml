@@ -12,11 +12,14 @@ dependencies:
 - hashable
 - hspec
 - megaparsec
+- mtl
 - text
+- transformers
 - unordered-containers
 - vector
 
 default-extensions:
+- BangPatterns
 - DefaultSignatures
 - DeriveGeneric
 - DerivingStrategies
