@@ -13,6 +13,7 @@ dependencies:
 - hspec
 - megaparsec
 - mtl
+- QuickCheck
 - text
 - transformers
 - unordered-containers
@@ -42,3 +43,10 @@ ghc-options:
 
 library:
   source-dirs: .
+
+executables:
+  adventofcode2019:
+    source-dirs: exe
+    main: Main.hs
+    dependencies: adventofcode2019
+

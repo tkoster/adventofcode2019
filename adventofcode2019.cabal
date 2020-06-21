@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ec91eb275e778ce93286b630cc4d8a5f8a0dad7ab37a3608089479484c7f613b
+-- hash: f933ed591cfb31ae7d80ba029aa0ef2e169e11ec8249c4f61aea71105eeb9984
 
 name:           adventofcode2019
 version:        0.1.0.0
@@ -24,6 +24,7 @@ library
       Day13
       Day14
       Day15
+      Day16
       Day2
       Day3
       Day4
@@ -43,7 +44,31 @@ library
   default-extensions: BangPatterns DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
   ghc-options: -Wall
   build-depends:
-      attoparsec
+      QuickCheck
+    , attoparsec
+    , base >=4.7 && <5
+    , hashable
+    , hspec
+    , megaparsec
+    , mtl
+    , text
+    , transformers
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable adventofcode2019
+  main-is: Main.hs
+  other-modules:
+      Paths_adventofcode2019
+  hs-source-dirs:
+      exe
+  default-extensions: BangPatterns DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
+  ghc-options: -Wall
+  build-depends:
+      QuickCheck
+    , adventofcode2019
+    , attoparsec
     , base >=4.7 && <5
     , hashable
     , hspec
