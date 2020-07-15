@@ -31,39 +31,40 @@ data Mode = Indirect | Immediate | Relative
   deriving (Eq, Show)
 
 data OpCode
-  = Add Mode Mode Mode
-  | Mul Mode Mode Mode
-  | Input Mode
-  | Output Mode
-  | JumpIfTrue Mode Mode
-  | JumpIfFalse Mode Mode
-  | Less Mode Mode Mode
-  | Equal Mode Mode Mode
-  | RelativeBase Mode
+  = Add
+  | Mul
+  | Input
+  | Output
+  | JumpIfTrue
+  | JumpIfFalse
+  | Less
+  | Equal
+  | RelativeBase
   | Stop
   deriving (Eq, Show)
 
 parseOp :: Int -> Int -> OpCode
 parseOp position code =
   case code `mod` 100 of
-    1 -> Add (parseMode 0) (parseMode 1) (parseMode 2)
-    2 -> Mul (parseMode 0) (parseMode 1) (parseMode 2)
-    3 -> Input (parseMode 0)
-    4 -> Output (parseMode 0)
-    5 -> JumpIfTrue (parseMode 0) (parseMode 1)
-    6 -> JumpIfFalse (parseMode 0) (parseMode 1)
-    7 -> Less (parseMode 0) (parseMode 1) (parseMode 2)
-    8 -> Equal (parseMode 0) (parseMode 1) (parseMode 2)
-    9 -> RelativeBase (parseMode 0)
+    1 -> Add
+    2 -> Mul
+    3 -> Input
+    4 -> Output
+    5 -> JumpIfTrue
+    6 -> JumpIfFalse
+    7 -> Less
+    8 -> Equal
+    9 -> RelativeBase
     99 -> Stop
     opcode -> error $ "Invalid opcode " <> show opcode <> " at position " <> show position <> ": " <> show code
-  where
-    parseMode i =
-      case digit (2 + i) code of
-        0 -> Indirect
-        1 -> Immediate
-        2 -> Relative
-        mode -> error $ "Invalid mode " <> show mode <> " at position " <> show position <> ": " <> show code
+
+parseMode :: Int -> Int -> Int -> Mode
+parseMode position argumentIndex code =
+  case digit (2 + argumentIndex) code of
+    0 -> Indirect
+    1 -> Immediate
+    2 -> Relative
+    mode -> error $ "Invalid mode " <> show mode <> " at position " <> show position <> ": " <> show code
 
 digit :: Int -> Int -> Int
 digit i value = value `div` (10 ^ i) `mod` 10
@@ -107,27 +108,32 @@ step :: Vector Int -> Int -> Int -> Result
 step memory pc rb = dispatch
   where
     op = parseOp pc (memory ! pc)
+    mode i = parseMode pc i (memory ! pc)
 
     dispatch =
       case op of
-        Add m0 m1 m2      -> add m0 m1 m2
-        Mul m0 m1 m2      -> mul m0 m1 m2
-        Input m           -> input m
-        Output m          -> output m
-        JumpIfTrue m0 m1  -> jumpIfTrue m0 m1
-        JumpIfFalse m0 m1 -> jumpIfFalse m0 m1
-        Less m0 m1 m2     -> less m0 m1 m2
-        Equal m0 m1 m2    -> equal m0 m1 m2
-        RelativeBase m    -> relativeBase m
+        Add               -> add
+        Mul               -> mul
+        Input             -> input
+        Output            -> output
+        JumpIfTrue        -> jumpIfTrue
+        JumpIfFalse       -> jumpIfFalse
+        Less              -> less
+        Equal             -> equal
+        RelativeBase      -> relativeBase
         Stop              -> stop
 
-    load i Indirect  | addr <-  memory ! (pc + i + 1) = load' addr
-    load i Immediate | value <- memory ! (pc + i + 1) = value
-    load i Relative  | addr <-  memory ! (pc + i + 1) = load' (rb + addr)
+    load i =
+      case mode i of
+        Indirect  | addr  <- memory ! (pc + i + 1) -> load' addr
+        Immediate | value <- memory ! (pc + i + 1) -> value
+        Relative  | addr  <- memory ! (pc + i + 1) -> load' (rb + addr)
 
-    store i Indirect | addr <- memory ! (pc + i + 1) = store' addr
-    store _ Immediate = error "invalid store immediate"
-    store i Relative | addr <- memory ! (pc + i + 1) = store' (rb + addr)
+    store i =
+      case mode i of
+        Indirect  | addr  <- memory ! (pc + i + 1) -> store' addr
+        Immediate -> error "invalid store immediate"
+        Relative  | addr  <- memory ! (pc + i + 1) -> store' (rb + addr)
 
     load' addr
       | addr < Vector.length memory = memory ! addr
@@ -137,24 +143,24 @@ step memory pc rb = dispatch
       | addr < Vector.length memory = memory // [(addr, value)]
       | otherwise = (memory <> Vector.replicate (1 + addr - Vector.length memory) 0) // [(addr, value)]
 
-    binop f mode0 mode1 mode2 =
-      let a       = load  0 mode0
-          b       = load  1 mode1
-          memory' = store 2 mode2 (f a b)
+    binop f =
+      let a       = load  0
+          b       = load  1
+          memory' = store 2 (f a b)
       in step memory' (pc + 4) rb
 
     add = binop (+)
 
     mul = binop (*)
 
-    input mode =
+    input =
       let continuation value =
-            let memory' = store 0 mode value
+            let memory' = store 0 value
             in  step memory' (pc + 2) rb
       in  Await continuation
 
-    output mode =
-      let value = load 0 mode
+    output =
+      let value = load 0
           continuation = step memory (pc + 2) rb
       in  Yield value continuation
 
@@ -164,10 +170,10 @@ step memory pc rb = dispatch
 
     equal = cmpop (==)
 
-    jumpop f mode0 mode1 =
-      if f (load 0 mode0)
+    jumpop f =
+      if f (load 0)
         then
-          step memory (load 1 mode1) rb
+          step memory (load 1) rb
         else
           step memory (pc + 3) rb
 
@@ -175,9 +181,7 @@ step memory pc rb = dispatch
 
     jumpIfFalse = jumpop (== 0)
 
-    relativeBase mode =
-      let offs = load 0 mode
-      in  step memory (pc + 2) (rb + offs)
+    relativeBase = step memory (pc + 2) (rb + load 0)
 
     stop = Done memory
 
@@ -207,12 +211,23 @@ spec = describe "Intcode" $ do
       it "given 9 outputs 1001" $
         eval mem [9] `shouldBe` [1001]
 
-  describe "Parsing" $
+  describe "Parsing" $ do
 
     describe "parseOp" $
 
       it "parses 1002" $
-        parseOp 0 1002 `shouldBe` Mul Indirect Immediate Indirect
+        parseOp 0 1002 `shouldBe` Mul
+
+    describe "parseMode" $ do
+
+      it "returns Indirect for the first argument of 21002" $
+        parseMode 0 0 21002 `shouldBe` Indirect
+
+      it "returns Immediate for the second argument of 21002" $
+        parseMode 0 1 21002 `shouldBe` Immediate
+
+      it "returns Relative for the third argument of 21002" $
+        parseMode 0 2 21002 `shouldBe` Relative
 
   describe "Arithmetic" $ do
 
@@ -313,7 +328,7 @@ spec = describe "Intcode" $ do
 
   describe "Large memory" $
 
-    it "works" $ do
+    it "quine program works" $ do
       let mem = parse "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99"
       eval mem [] `shouldBe` [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
 
