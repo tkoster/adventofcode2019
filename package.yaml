@@ -9,6 +9,7 @@ description: Advent of Code 2019
 dependencies:
 - base >= 4.7 && < 5
 - attoparsec
+- bytestring
 - hashable
 - hspec
 - megaparsec

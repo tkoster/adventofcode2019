@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f933ed591cfb31ae7d80ba029aa0ef2e169e11ec8249c4f61aea71105eeb9984
+-- hash: 2c5d3067edd4350bb2c05d3c3ee8b3b7a472fe0b5d67a0264b6caa6c88587497
 
 name:           adventofcode2019
 version:        0.1.0.0
@@ -25,6 +25,7 @@ library
       Day14
       Day15
       Day16
+      Day17
       Day2
       Day3
       Day4
@@ -47,6 +48,7 @@ library
       QuickCheck
     , attoparsec
     , base >=4.7 && <5
+    , bytestring
     , hashable
     , hspec
     , megaparsec
@@ -70,6 +72,7 @@ executable adventofcode2019
     , adventofcode2019
     , attoparsec
     , base >=4.7 && <5
+    , bytestring
     , hashable
     , hspec
     , megaparsec
