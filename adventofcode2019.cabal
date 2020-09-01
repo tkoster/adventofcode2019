@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2c5d3067edd4350bb2c05d3c3ee8b3b7a472fe0b5d67a0264b6caa6c88587497
+-- hash: c1334f349f47f264c696d56a00caa78af8740571a7d51f8b579ad405d944278d
 
 name:           adventofcode2019
 version:        0.1.0.0
@@ -26,6 +26,7 @@ library
       Day15
       Day16
       Day17
+      Day18
       Day2
       Day3
       Day4
@@ -42,7 +43,7 @@ library
       Paths_adventofcode2019
   hs-source-dirs:
       ./.
-  default-extensions: BangPatterns DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
+  default-extensions: BangPatterns DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
   ghc-options: -Wall
   build-depends:
       QuickCheck
@@ -50,6 +51,7 @@ library
     , base >=4.7 && <5
     , bytestring
     , hashable
+    , heaps
     , hspec
     , megaparsec
     , mtl
@@ -65,7 +67,7 @@ executable adventofcode2019
       Paths_adventofcode2019
   hs-source-dirs:
       exe
-  default-extensions: BangPatterns DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
+  default-extensions: BangPatterns DefaultSignatures DeriveGeneric DerivingStrategies FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings RecordWildCards ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeOperators
   ghc-options: -Wall
   build-depends:
       QuickCheck
@@ -74,6 +76,7 @@ executable adventofcode2019
     , base >=4.7 && <5
     , bytestring
     , hashable
+    , heaps
     , hspec
     , megaparsec
     , mtl
