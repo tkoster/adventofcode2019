@@ -6,10 +6,9 @@
 
 module Main (main) where
 
-import Day16
+import Day18
 
 main :: IO ()
 main = do
-  print part1
-  print part2
+  selfTest
 
